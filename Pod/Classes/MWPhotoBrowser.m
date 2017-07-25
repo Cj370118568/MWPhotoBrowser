@@ -158,7 +158,9 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 	_pagingScrollView.backgroundColor = [UIColor blackColor];
     _pagingScrollView.contentSize = [self contentSizeForPagingScrollView];
 	[self.view addSubview:_pagingScrollView];
-	
+    
+    _deleteButton=[[UIBarButtonItem alloc]initWithBarButtonSystemItem:UIBarButtonSystemItemTrash target:self action:@selector(deletePhoto:)];
+    
     // Toolbar
     _toolbar = [[UIToolbar alloc] initWithFrame:[self frameForToolbarAtOrientation:self.interfaceOrientation]];
     _toolbar.tintColor = [UIColor whiteColor];
@@ -208,7 +210,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
     // Navigation buttons
     if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
         // We're first on stack so show done button
-        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"完成", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
         // Set appearance
         [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
         [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsLandscapePhone];
@@ -245,12 +247,18 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         hasItems = YES;
         [items addObject:[[UIBarButtonItem alloc] initWithImage:[UIImage imageForResourcePath:@"MWPhotoBrowser.bundle/UIBarButtonItemGrid" ofType:@"png" inBundle:[NSBundle bundleForClass:[self class]]] style:UIBarButtonItemStylePlain target:self action:@selector(showGridAnimated)]];
     } else {
-        [items addObject:fixedSpace];
+
+        if (_enableDelete) {
+           [items addObject:_deleteButton];
+            [items addObject:fixedSpace];
+        }
+        
     }
 
     // Middle - Nav
     if (_previousButton && _nextButton && numberOfPhotos > 1) {
         hasItems = YES;
+        
         [items addObject:flexSpace];
         [items addObject:_previousButton];
         [items addObject:flexSpace];
@@ -258,6 +266,7 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
         [items addObject:flexSpace];
     } else {
         [items addObject:flexSpace];
+        
     }
 
     // Right - Action
@@ -1577,6 +1586,19 @@ static void * MWVideoPlayerObservation = &MWVideoPlayerObservation;
 }
 
 #pragma mark - Actions
+
+- (void)deletePhoto:(id)sender {
+    
+    
+    id <MWPhoto> photo = [self photoAtIndex:_currentPageIndex];
+    
+    if ([self.delegate respondsToSelector:@selector(photoBrowser:deletebuttonPressedforPhotoAtIndex:)]) {
+        
+        [self.delegate photoBrowser:self deletebuttonPressedforPhotoAtIndex:_currentPageIndex];
+        [self reloadData];
+    }
+    
+}
 
 - (void)actionButtonPressed:(id)sender {
 
